@@ -1,0 +1,155 @@
+#%RAML 1.0
+title: New API
+baseUri: acmetravels
+description: THis api provides the interface to the acme companies flight booking system.
+mediaType:
+  - application/json
+protocols:
+  - HTTP
+/flights:
+  get:
+    displayName: Flights
+    description: |
+      Get List of flights with appropriate filters
+
+      Query Param    |  Mandatory   |   Type   |Comment
+      departureDate |  False              | String   | Defaults to sysdate
+    queryParameters:
+      departureDate?:
+        type: date-only
+/flight:
+  post:
+    displayName: NewFlight
+    description: Flight Resource for adding a  new flight
+    body:
+      application/json:
+        description: Flight Object for Posting new Flight(includes flightCode)
+        type: FlightObject
+  patch:
+    displayName: ChangeFlight
+    description: Flight Resource for modifying an existing   flight
+    body:
+      application/json:
+        description: Flight Object for patch(does not include flightCode)
+        type: FlightObjectPatch
+/destinations:
+  get:
+    displayName: Destinations
+    queryParameters:
+      airlineName?:
+        example: Example
+        type: string
+      page?:
+        example: 1
+        type: number
+        format: int
+      size?:
+        example: 1
+        type: number
+        format: int
+    responses:
+      "200":
+        body:
+          application/json:
+            description: Destinations Object
+            type: Destinations
+    description: |-
+      Get Destinations
+      page and size query parameters(passed in the header) are pagination related.The default behaviour(ie if you dont provide them) is the 0th page with a page size of 10
+
+      The airlineName query parameter allows you to filter based on airline .If you do not provide this parameter in the request..the api returns flights from all airlines.
+types:
+  page:
+    description: Page Details
+    properties:
+      size?:
+        example: 10
+        type: number
+        format: int
+      totalElements?:
+        example: 100
+        type: number
+        format: int
+      totalPages?:
+        example: 10
+        type: number
+        format: int
+      pageNumber?:
+        example: 1
+        type: number
+        format: int
+  Destinations:
+    description: Destinations object
+    properties:
+      destinations?:
+        items:
+          properties:
+            country:
+              example: Germany
+              type: string
+            city?:
+              example: Dresden
+              type: string
+            airportName?:
+              example: Dresden Airport
+              type: string
+      page?:
+        description: Page Details
+        type: page
+  FlightObjectPatch:
+    description: Flight Object
+    properties:
+      departureDateTime?:
+        example: 2022-02-22T20:39:37.264Z
+        type: datetime
+        format: rfc3339
+      airlineName?:
+        example: British Airways
+        type: string
+      departureAiportIATACode?:
+        example: JFK
+        type: string
+      destinatiomAirportIATACode?:
+        example: LCY
+        type: string
+      aircraftMakeModel?:
+        example: Airbus A318
+        type: string
+      availableSeats?:
+        example: 1
+        type: number
+        format: int
+      ticketPricePerSeat?:
+        example: 1
+        type: number
+        format: float
+  FlightObject:
+    description: Flight Object
+    properties:
+      departureDateTime:
+        example: 2022-02-23T11:31:21.291Z
+        type: datetime
+        format: rfc3339
+      airlineName?:
+        example: British Airways
+        type: string
+      departureAiportIATACode?:
+        example: JFK
+        type: string
+      destinatiomAirportIATACode?:
+        example: LCY
+        type: string
+      aircraftMakeModel?:
+        example: Airbus A318
+        type: string
+      availableSeats?:
+        example: 10
+        type: number
+        format: int
+      ticketPricePerSeat?:
+        example: 100.12
+        type: number
+        format: float
+      flightCode:
+        example: BA001
+        type: string
