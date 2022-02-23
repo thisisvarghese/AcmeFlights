@@ -3,7 +3,7 @@
     <http:listener-config name="flightsapi-httpListenerConfig">
         <http:listener-connection host="0.0.0.0" port="8081" />
     </http:listener-config>
-    <apikit:config name="flightsapi-config" api="flightsapi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    
     <flow name="flightsapi-main">
         <http:listener config-ref="flightsapi-httpListenerConfig" path="/api/*">
             <http:response statusCode="#[vars.httpStatus default 200]">
