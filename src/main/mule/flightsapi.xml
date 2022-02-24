@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd 
-http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd  http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
     <http:listener-config name="flightsapi-httpListenerConfig">
         <http:listener-connection host="0.0.0.0" port="8081" />
     </http:listener-config>
-    <apikit:config name="flightsapi-config" api="resource::167d5a72-8c0d-44a7-a4f8-60e62c8a11fe:flightsapi:2.0.0:raml:zip:flightsapi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
-    <db:config name="Database_Config" doc:name="Database Config" doc:id="ac29f3ab-18ce-44d2-a18a-6d7421bd2a12" >
-		<db:my-sql-connection host="rds-mysql-assessment.ckld9drpn0yb.eu-west-1.rds.amazonaws.com" port="3306" user="varghese" password="amrsterdam" database="airlines_sandbox" />
-	</db:config>
-	<flow name="flightsapi-main">
+    <apikit:config name="flightsapi-config" api="resource::167d5a72-8c0d-44a7-a4f8-60e62c8a11fe:flightsapi:2.1.0:raml:zip:flightsapi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <db:config name="Database_Config" doc:name="Database Config" doc:id="ac29f3ab-18ce-44d2-a18a-6d7421bd2a12">
+        <db:my-sql-connection host="rds-mysql-assessment.ckld9drpn0yb.eu-west-1.rds.amazonaws.com" port="3306" user="varghese" password="amrsterdam" database="airlines_sandbox" />
+    </db:config>
+    <flow name="flightsapi-main">
         <http:listener config-ref="flightsapi-httpListenerConfig" path="/api/*">
             <http:response statusCode="#[vars.httpStatus default 200]">
                 <http:headers>#[vars.outboundHeaders default {}]</http:headers>
@@ -137,63 +136,60 @@ output application/json
         <logger level="INFO" message="get:\destinations:flightsapi-config" />
     </flow>
     <flow name="get:\flights:flightsapi-config">
-        <ee:transform doc:name="Save Input Variables" doc:id="3aae7280-9b07-4521-9fc6-c7de1ec37e51" >
-			<ee:message >
-			</ee:message>
-			<ee:variables >
-				<ee:set-variable variableName="inputParams" ><![CDATA[%dw 2.0
+        <ee:transform doc:name="Save Input Variables" doc:id="3aae7280-9b07-4521-9fc6-c7de1ec37e51">
+            <ee:message />
+            <ee:variables>
+                <ee:set-variable variableName="inputParams"><![CDATA[%dw 2.0
 output application/json
 ---
 {
 "departureDate" : attributes.queryParams.departureDate
-}
-]]></ee:set-variable>
-			</ee:variables>
-		</ee:transform>
-		<logger level="INFO" doc:name="Logger" doc:id="696e6da2-603f-4f94-9280-b6a567b2e2aa" message="#[vars.inputParams.departureDate]"/>
-		<db:select doc:name="Select" doc:id="602991a7-a380-4a47-89e6-f95e76ed9adc" config-ref="Database_Config">
-			<db:sql ><![CDATA[select * from flights_varghese where DATE(Departure_date) = :departureDate]]></db:sql>
-			<db:input-parameters ><![CDATA[#[{'departureDate' : vars.inputParams.departureDate}]]]></db:input-parameters>
-		</db:select>
-		<ee:transform doc:name="Transform Message" doc:id="73855b91-7722-4440-8080-0a930f044c9f" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
+}]]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <logger level="INFO" doc:name="Logger" doc:id="696e6da2-603f-4f94-9280-b6a567b2e2aa" message="#[vars.inputParams.departureDate]" />
+        <db:select doc:name="Select" doc:id="602991a7-a380-4a47-89e6-f95e76ed9adc" config-ref="Database_Config">
+            <db:sql><![CDATA[select * from flights_varghese where DATE(Departure_date) = :departureDate]]></db:sql>
+            <db:input-parameters><![CDATA[#[{'departureDate' : vars.inputParams.departureDate}]]]></db:input-parameters>
+        </db:select>
+        <ee:transform doc:name="Transform Message" doc:id="73855b91-7722-4440-8080-0a930f044c9f">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 payload]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-		<logger level="INFO" message="get:\flights:flightsapi-config" />
+            </ee:message>
+        </ee:transform>
+        <logger level="INFO" message="get:\flights:flightsapi-config" />
     </flow>
     <flow name="post:\flight:application\json:flightsapi-config">
-		<ee:transform doc:name="Transform Message" doc:id="1b16f2ee-d2de-4958-8a05-2653fb491f5d" >
-			<ee:message >
-			</ee:message>
-			<ee:variables >
-				<ee:set-variable variableName="departureDateTransformed" ><![CDATA[(payload.departureDateTime as DateTime) as String{format: "y-MM-d h:m:s"}]]></ee:set-variable>
-			</ee:variables>
-		</ee:transform>
-		<logger level="INFO" doc:name="Logger" doc:id="8d151e53-dced-42f2-97ee-ceaf42835d80" message="#[vars.departureDateTransformed]"/>
-		<db:insert doc:name="Insert" doc:id="5f62f56a-d280-43a1-b7c2-271f84c74845" config-ref="Database_Config">
-			<db:sql ><![CDATA[insert into airlines_sandbox.flights_varghese (Flight_Code,Airline_Name,Departure_Airport,Destination_Airport,Departure_Date,Aircraft_Type,Seat_Availability,Price)
+        <ee:transform doc:name="Transform Message" doc:id="1b16f2ee-d2de-4958-8a05-2653fb491f5d">
+            <ee:message />
+            <ee:variables>
+                <ee:set-variable variableName="departureDateTransformed"><![CDATA[(payload.departureDateTime as DateTime) as String{format: "y-MM-d h:m:s"}]]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <logger level="INFO" doc:name="Logger" doc:id="8d151e53-dced-42f2-97ee-ceaf42835d80" message="#[vars.departureDateTransformed]" />
+        <db:insert doc:name="Insert" doc:id="5f62f56a-d280-43a1-b7c2-271f84c74845" config-ref="Database_Config">
+            <db:sql><![CDATA[insert into airlines_sandbox.flights_varghese (Flight_Code,Airline_Name,Departure_Airport,Destination_Airport,Departure_Date,Aircraft_Type,Seat_Availability,Price)
 VALUES (:flightCode,:airlineName,:departureAiportIATACode,:destinatiomAirportIATACode,:departureDateTime,:aircraftMakeModel,:availableSeats,:ticketPricePerSeat)]]></db:sql>
-			<db:input-parameters ><![CDATA[#[{'flightCode': payload.flightCode,'airlineName': payload.airlineName,'departureAiportIATACode': payload.departureAiportIATACode,'destinatiomAirportIATACode': payload.destinatiomAirportIATACode,'departureDateTime': (payload.departureDateTime as DateTime) as String{format: "y-MM-d h:m"},'aircraftMakeModel': payload.aircraftMakeModel,'availableSeats': payload.availableSeats,'ticketPricePerSeat': payload.ticketPricePerSeat}]]]></db:input-parameters>
-		</db:insert>
-		<ee:transform doc:name="Transform Message" doc:id="1bcb5eec-1fd6-4ad9-8e7a-1d898d90688d" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
+            <db:input-parameters><![CDATA[#[{'flightCode': payload.flightCode,'airlineName': payload.airlineName,'departureAiportIATACode': payload.departureAiportIATACode,'destinatiomAirportIATACode': payload.destinatiomAirportIATACode,'departureDateTime': (payload.departureDateTime as DateTime) as String{format: "y-MM-d h:m"},'aircraftMakeModel': payload.aircraftMakeModel,'availableSeats': payload.availableSeats,'ticketPricePerSeat': payload.ticketPricePerSeat}]]]></db:input-parameters>
+        </db:insert>
+        <ee:transform doc:name="Transform Message" doc:id="1bcb5eec-1fd6-4ad9-8e7a-1d898d90688d">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 payload]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-		<logger level="INFO" message="post:\flight:application\json:flightsapi-config" />
-		<error-handler >
-			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="c33bd799-f0a4-4fdf-b49a-5ae3acc67f7b" type="DB:QUERY_EXECUTION">
-				<logger level="INFO" doc:name="Logger" doc:id="c369aeb4-5bda-475d-9b54-0ffaf92f846e" message="#[error.description]" />
-				<ee:transform doc:name="Transform Message" doc:id="9dd2849f-6cd9-4cda-b127-7a66cd8bf27a" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
+            </ee:message>
+        </ee:transform>
+        <logger level="INFO" message="post:\flight:application\json:flightsapi-config" />
+        <error-handler>
+            <on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="c33bd799-f0a4-4fdf-b49a-5ae3acc67f7b" type="DB:QUERY_EXECUTION">
+                <logger level="INFO" doc:name="Logger" doc:id="c369aeb4-5bda-475d-9b54-0ffaf92f846e" message="#[error.description]" />
+                <ee:transform doc:name="Transform Message" doc:id="9dd2849f-6cd9-4cda-b127-7a66cd8bf27a">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
 output application/json encoding="UTF-8", skipNullOn="everywhere"
 ---
 error: {
@@ -202,12 +198,12 @@ error: {
 	errorDescription: "Resource already exist",
 	errorDateTime: now() as String { format: "yyyy-MM-dd'T'HH:mm:ss" }
 }]]></ee:set-payload>
-					</ee:message>
-					<ee:variables >
-						<ee:set-variable variableName="httpStatus" ><![CDATA[409]]></ee:set-variable>
-					</ee:variables>
-				</ee:transform>
-			</on-error-propagate>
-		</error-handler>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[409]]></ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
     </flow>
 </mule>
