@@ -137,8 +137,22 @@ output application/json
         <logger level="INFO" message="get:\destinations:flightsapi-config" />
     </flow>
     <flow name="get:\flights:flightsapi-config">
-        <db:select doc:name="Select" doc:id="602991a7-a380-4a47-89e6-f95e76ed9adc" config-ref="Database_Config">
-			<db:sql ><![CDATA[select * from flights_varghese]]></db:sql>
+        <ee:transform doc:name="Save Input Variables" doc:id="3aae7280-9b07-4521-9fc6-c7de1ec37e51" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="inputParams" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+"departureDate" : attributes.queryParam.departureDate
+}
+]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<db:select doc:name="Select" doc:id="602991a7-a380-4a47-89e6-f95e76ed9adc" config-ref="Database_Config">
+			<db:sql ><![CDATA[select * from flights_varghese where DATE(Departure_date) = :departureDate]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{'departureDate' : vars.inputParams.departureDate}]]]></db:input-parameters>
 		</db:select>
 		<ee:transform doc:name="Transform Message" doc:id="73855b91-7722-4440-8080-0a930f044c9f" >
 			<ee:message >
