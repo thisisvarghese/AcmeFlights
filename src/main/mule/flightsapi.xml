@@ -166,6 +166,27 @@ payload]]></ee:set-payload>
 		<logger level="INFO" message="get:\flights:flightsapi-config" />
     </flow>
     <flow name="post:\flight:application\json:flightsapi-config">
-        <logger level="INFO" message="post:\flight:application\json:flightsapi-config" />
+		<ee:transform doc:name="Transform Message" doc:id="1b16f2ee-d2de-4958-8a05-2653fb491f5d" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="departureDateTransformed" ><![CDATA[(payload.departureDateTime as DateTime) as String{format: "y-MM-d h:m:s"}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="8d151e53-dced-42f2-97ee-ceaf42835d80" message="#[vars.departureDateTransformed]"/>
+		<db:insert doc:name="Insert" doc:id="5f62f56a-d280-43a1-b7c2-271f84c74845" config-ref="Database_Config">
+			<db:sql ><![CDATA[insert into airlines_sandbox.flights_varghese (Flight_Code,Airline_Name,Departure_Airport,Destination_Airport,Departure_Date,Aircraft_Type,Seat_Availability,Price)
+VALUES (:flightCode,:airlineName,:departureAiportIATACode,:destinatiomAirportIATACode,:departureDateTime,:aircraftMakeModel,:availableSeats,:ticketPricePerSeat)]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{'flightCode': payload.flightCode,'airlineName': payload.airlineName,'departureAiportIATACode': payload.departureAiportIATACode,'destinatiomAirportIATACode': payload.destinatiomAirportIATACode,'departureDateTime': (payload.departureDateTime as DateTime) as String{format: "y-MM-d h:m"},'aircraftMakeModel': payload.aircraftMakeModel,'availableSeats': payload.availableSeats,'ticketPricePerSeat': payload.ticketPricePerSeat}]]]></db:input-parameters>
+		</db:insert>
+		<ee:transform doc:name="Transform Message" doc:id="1bcb5eec-1fd6-4ad9-8e7a-1d898d90688d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" message="post:\flight:application\json:flightsapi-config" />
     </flow>
 </mule>
