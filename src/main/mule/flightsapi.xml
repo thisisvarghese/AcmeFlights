@@ -188,5 +188,26 @@ payload]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 		<logger level="INFO" message="post:\flight:application\json:flightsapi-config" />
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="c33bd799-f0a4-4fdf-b49a-5ae3acc67f7b" type="DB:QUERY_EXECUTION">
+				<logger level="INFO" doc:name="Logger" doc:id="c369aeb4-5bda-475d-9b54-0ffaf92f846e" message="#[error.description]" />
+				<ee:transform doc:name="Transform Message" doc:id="9dd2849f-6cd9-4cda-b127-7a66cd8bf27a" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json encoding="UTF-8", skipNullOn="everywhere"
+---
+error: {
+	errorCode: ("409" ++ " : Conflict"),
+	errorMessage: "Data Integrity Constraint",
+	errorDescription: "Resource already exist",
+	errorDateTime: now() as String { format: "yyyy-MM-dd'T'HH:mm:ss" }
+}]]></ee:set-payload>
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="httpStatus" ><![CDATA[409]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
     </flow>
 </mule>
