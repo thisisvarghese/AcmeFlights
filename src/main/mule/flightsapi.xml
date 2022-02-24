@@ -145,11 +145,12 @@ output application/json
 output application/json
 ---
 {
-"departureDate" : attributes.queryParam.departureDate
+"departureDate" : attributes.queryParams.departureDate
 }
 ]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="696e6da2-603f-4f94-9280-b6a567b2e2aa" message="#[vars.inputParams.departureDate]"/>
 		<db:select doc:name="Select" doc:id="602991a7-a380-4a47-89e6-f95e76ed9adc" config-ref="Database_Config">
 			<db:sql ><![CDATA[select * from flights_varghese where DATE(Departure_date) = :departureDate]]></db:sql>
 			<db:input-parameters ><![CDATA[#[{'departureDate' : vars.inputParams.departureDate}]]]></db:input-parameters>
