@@ -3,7 +3,7 @@
     <http:listener-config name="flightsapi-httpListenerConfig">
         <http:listener-connection host="0.0.0.0" port="8081" />
     </http:listener-config>
-    <apikit:config name="flightsapi-config" api="resource::167d5a72-8c0d-44a7-a4f8-60e62c8a11fe:flightsapi:3.0.0:raml:zip:flightsapi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <apikit:config name="flightsapi-config" api="resource::167d5a72-8c0d-44a7-a4f8-60e62c8a11fe:flightsapi:3.1.0:raml:zip:flightsapi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
     <db:config name="Database_Config" doc:name="Database Config" doc:id="ac29f3ab-18ce-44d2-a18a-6d7421bd2a12">
         <db:my-sql-connection host="rds-mysql-assessment.ckld9drpn0yb.eu-west-1.rds.amazonaws.com" port="3306" user="varghese" password="amrsterdam" database="airlines_sandbox" />
     </db:config>
@@ -150,65 +150,65 @@ where Flight_Code = :flightCode and Departure_Date= :departureDateTime;]]></db:s
                     <db:input-parameters><![CDATA[#[{'availableSeats': payload.availableSeats,'flightCode': payload.flightCode,'departureDateTime': (payload.departureDateTime as DateTime) as String{format: "y-MM-d h:m"}}]]]></db:input-parameters>
                 </db:update>
             </when>
-              <when expression="#[payload.availableSeats == null and payload.ticketPricePerSeat !=null]">
+            <when expression="#[payload.availableSeats == null and payload.ticketPricePerSeat !=null]">
                 <db:update doc:name="Update Price only" doc:id="d9525c55-aa7c-46c6-84da-7926d59fb4fa" config-ref="Database_Config">
                     <db:sql><![CDATA[update airlines_sandbox.flights_varghese set Price= :ticketPricePerSeat
 where Flight_Code = :flightCode and Departure_Date= :departureDateTime;]]></db:sql>
                     <db:input-parameters><![CDATA[#[{'ticketPricePerSeat': payload.ticketPricePerSeat,'flightCode': payload.flightCode,'departureDateTime': (payload.departureDateTime as DateTime) as String{format: "y-MM-d h:m"}}]]]></db:input-parameters>
                 </db:update>
             </when>
-             <when expression="#[payload.availableSeats != null and payload.ticketPricePerSeat !=null]">
+            <when expression="#[payload.availableSeats != null and payload.ticketPricePerSeat !=null]">
                 <db:update doc:name="Update Price and Seatsavailability" doc:id="5f587431-90ac-41c4-b7d3-a33c56411fe5" config-ref="Database_Config">
                     <db:sql><![CDATA[update airlines_sandbox.flights_varghese set Price= :ticketPricePerSeat,Seat_Availability= :availableSeats
 where Flight_Code = :flightCode and Departure_Date= :departureDateTime;]]></db:sql>
                     <db:input-parameters><![CDATA[#[{'ticketPricePerSeat': payload.ticketPricePerSeat,'availableSeats': payload.availableSeats,'flightCode': payload.flightCode,'departureDateTime': (payload.departureDateTime as DateTime) as String{format: "y-MM-d h:m"}}]]]></db:input-parameters>
                 </db:update>
             </when>
-			<otherwise >
-				<ee:transform doc:name="Transform Message" doc:id="7e11f17e-d39f-4b41-8101-8953106296cc" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
+            <otherwise>
+                <ee:transform doc:name="Transform Message" doc:id="7e11f17e-d39f-4b41-8101-8953106296cc">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
 output application/java
 ---
 affectedRows: -1]]></ee:set-payload>
-					</ee:message>
-				</ee:transform>
-			</otherwise>
+                    </ee:message>
+                </ee:transform>
+            </otherwise>
         </choice>
         <choice doc:name="Choice" doc:id="a2d39bde-e098-4a07-b2d5-e02b62a3b594">
-					<when expression="payload.affectedRows==1">
-						<ee:transform doc:name="Success-No output paylaod" doc:id="41209297-b895-4a15-bdd0-e3ae10e4b3ee">
-							<ee:message>
-								<ee:set-payload><![CDATA[%dw 2.0
+            <when expression="payload.affectedRows==1">
+                <ee:transform doc:name="Success-No output paylaod" doc:id="41209297-b895-4a15-bdd0-e3ae10e4b3ee">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {}]]></ee:set-payload>
-							</ee:message>
-						</ee:transform>
-					</when>
-					<when expression="payload.affectedRows==0">
-						<raise-error doc:name="Raise error" doc:id="91257ecc-a64b-4d4e-b20b-d2cc6fa54390" type="UPD:NO_RECORDS_UPDATED" description="No records were updated" />
-					</when>
-					<when expression="payload.affectedRows==-1">
-				<ee:transform doc:name="Nothing to change..no output payload" doc:id="545ed12a-1c60-4c78-9e6b-b4ee053bc285" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
+                    </ee:message>
+                </ee:transform>
+            </when>
+            <when expression="payload.affectedRows==0">
+                <raise-error doc:name="Raise error" doc:id="91257ecc-a64b-4d4e-b20b-d2cc6fa54390" type="UPD:NO_RECORDS_UPDATED" description="No records were updated" />
+            </when>
+            <when expression="payload.affectedRows==-1">
+                <ee:transform doc:name="Nothing to change..no output payload" doc:id="545ed12a-1c60-4c78-9e6b-b4ee053bc285">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {}]]></ee:set-payload>
-					</ee:message>
-				</ee:transform>
-					</when>
-					<otherwise>
-						<raise-error doc:name="Raise error" doc:id="16a52890-1602-448d-b47a-ef56ff824858" type="UPD:MULT_UPDATED" description="multiple records updated-raise error" />
-					</otherwise>
-				</choice>
-		<logger level="INFO" message="patch:\flight:application\json:flightsapi-config" />
-		<error-handler>
-			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="ae15f3f4-8bba-4a88-8c5b-49fa34857cd9" >
-				<ee:transform doc:name="Transform Message" doc:id="12c656e7-56c0-48b7-92e6-f52b1516bc02" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
+                    </ee:message>
+                </ee:transform>
+            </when>
+            <otherwise>
+                <raise-error doc:name="Raise error" doc:id="16a52890-1602-448d-b47a-ef56ff824858" type="UPD:MULT_UPDATED" description="multiple records updated-raise error" />
+            </otherwise>
+        </choice>
+        <logger level="INFO" message="patch:\flight:application\json:flightsapi-config" />
+        <error-handler>
+            <on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="ae15f3f4-8bba-4a88-8c5b-49fa34857cd9">
+                <ee:transform doc:name="Transform Message" doc:id="12c656e7-56c0-48b7-92e6-f52b1516bc02">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
 output application/json encoding="UTF-8", skipNullOn="everywhere"
 ---
 error: {
@@ -217,16 +217,49 @@ error: {
 	errorDescription: "Nothing updated",
 	errorDateTime: now() as String { format: "yyyy-MM-dd'T'HH:mm:ss" }
 }]]></ee:set-payload>
-					</ee:message>
-					<ee:variables >
-						<ee:set-variable variableName="httpStatus" ><![CDATA[404]]></ee:set-variable>
-					</ee:variables>
-				</ee:transform>
-			</on-error-propagate>
-		</error-handler>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[404]]></ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
     </flow>
     <flow name="get:\destinations:flightsapi-config">
-        <logger level="INFO" message="get:\destinations:flightsapi-config" />
+        <ee:transform doc:name="Save inputParams" doc:id="00715d37-72f1-4c76-b247-3374f5a40685">
+            <ee:message />
+            <ee:variables>
+                <ee:set-variable variableName="inputParams"><![CDATA[%dw 2.0
+output application/java
+---
+{
+	"airlineIATACode": attributes.queryParams.airlineIATACode,
+	"page": attributes.queryParams.page default 1,
+	"size": attributes.queryParams.size default 10
+}]]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+        <db:select doc:name="Select" doc:id="4a1420de-cad2-44f7-9130-537b3c485f13" config-ref="Database_Config">
+			<db:sql ><![CDATA[select * from airlines_sandbox.airports where IATA in(
+select distinct Destination_Airport from airlines_sandbox.flights_varghese where Flight_Code like :airlineIATACode);]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{'airlineIATACode': vars.inputParams.airlineIATACode ++ '%'}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="8b10988d-f559-4dc1-b41b-a980610ddb02" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	destinations: payload map ( payload01 , indexOfPayload01 ) -> {
+		country: payload01.Country,
+		airportName: payload01.Name,
+		city: payload01.City,
+		airlineIATACode: vars.inputParams.airlineIATACode as String
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" message="get:\destinations:flightsapi-config" />
     </flow>
     <flow name="get:\flights:flightsapi-config">
         <ee:transform doc:name="Save Input Variables" doc:id="3aae7280-9b07-4521-9fc6-c7de1ec37e51">
@@ -250,7 +283,18 @@ output application/json
                 <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
-payload]]></ee:set-payload>
+{
+	flights: payload map ( payload01 , indexOfPayload01 ) -> {
+		departureAiportIATACode: payload01.Departure_Airport,
+		aircraftMakeModel: payload01.Aircraft_Type,
+		ticketPricePerSeat: payload01.Price,
+		flightCode: payload01.Flight_Code,
+		destinatiomAirportIATACode: payload01.Destination_Airport,
+		availableSeats: payload01.Seat_Availability,
+		departureDateTime: payload01.Departure_Date as String,
+		airlineName: payload01.Airline_Name
+	}
+}]]></ee:set-payload>
             </ee:message>
         </ee:transform>
         <logger level="INFO" message="get:\flights:flightsapi-config" />
