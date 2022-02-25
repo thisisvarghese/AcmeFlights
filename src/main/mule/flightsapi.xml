@@ -230,19 +230,19 @@ error: {
             <ee:message />
             <ee:variables>
                 <ee:set-variable variableName="inputParams"><![CDATA[%dw 2.0
-output application/java
+output application/json
 ---
 {
 	"airlineIATACode": attributes.queryParams.airlineIATACode,
 	"page": attributes.queryParams.page default 1,
-	"size": attributes.queryParams.size default 10
+	"size": attributes.queryParams.size  default 10
 }]]></ee:set-variable>
             </ee:variables>
         </ee:transform>
         <db:select doc:name="Select" doc:id="4a1420de-cad2-44f7-9130-537b3c485f13" config-ref="Database_Config">
 			<db:sql ><![CDATA[select * from airlines_sandbox.airports where IATA in(
-select distinct Destination_Airport from airlines_sandbox.flights_varghese where Flight_Code like :airlineIATACode);]]></db:sql>
-			<db:input-parameters ><![CDATA[#[{'airlineIATACode': vars.inputParams.airlineIATACode ++ '%'}]]]></db:input-parameters>
+select distinct Destination_Airport from airlines_sandbox.flights_varghese where Flight_Code like :airlineIATACode) LIMIT 10;]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{'airlineIATACode': vars.inputParams.airlineIATACode ++ '%','size': vars.inputParams.size as String}]]]></db:input-parameters>
 		</db:select>
 		<ee:transform doc:name="Transform Message" doc:id="8b10988d-f559-4dc1-b41b-a980610ddb02" >
 			<ee:message >
