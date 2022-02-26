@@ -342,7 +342,7 @@ VALUES (:flightCode,:airlineName,:departureAiportIATACode,:destinatiomAirportIAT
                 <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
-payload]]></ee:set-payload>
+{}]]></ee:set-payload>
             </ee:message>
         </ee:transform>
         <logger level="INFO" message="post:\flight:application\json:flightsapi-config" />
