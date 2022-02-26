@@ -241,10 +241,10 @@ output application/json
         </ee:transform>
         <db:select doc:name="Select" doc:id="4a1420de-cad2-44f7-9130-537b3c485f13" config-ref="Database_Config">
 			<db:sql ><![CDATA[select * from airlines_sandbox.airports where IATA in(
-select distinct Destination_Airport from airlines_sandbox.flights_varghese where Flight_Code like :airlineIATACode) LIMIT 10;]]></db:sql>
-			<db:input-parameters ><![CDATA[#[{'airlineIATACode': vars.inputParams.airlineIATACode ++ '%','size': vars.inputParams.size as String}]]]></db:input-parameters>
+select distinct Destination_Airport from airlines_sandbox.flights_varghese where Flight_Code like :airlineIATACode)]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{'airlineIATACode': vars.inputParams.airlineIATACode ++ '%','page': vars.inputParams.page as String}]]]></db:input-parameters>
 		</db:select>
-		<ee:transform doc:name="Transform Message" doc:id="8b10988d-f559-4dc1-b41b-a980610ddb02" >
+		<ee:transform doc:name="Transform Message-map to output structure" doc:id="8b10988d-f559-4dc1-b41b-a980610ddb02" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
@@ -255,7 +255,32 @@ output application/json
 		airportName: payload01.Name,
 		city: payload01.City,
 		airlineIATACode: vars.inputParams.airlineIATACode as String
+	},
+	page: {
+		pageNumber: vars.inputParams.page,
+		size: vars.inputParams.size,
+		totalPages:floor (if((sizeOf(payload) mod  vars.inputParams.size)>0) (sizeOf(payload)/vars.inputParams.size)+1 else (sizeOf(payload)/vars.inputParams.size)),
+		totalElements: sizeOf(payload)
 	}
+}]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="sizeOfArray" ><![CDATA[%dw 2.0
+output application/json
+---
+sizeOf(payload)]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="get Requested Pages" doc:id="74fd68f6-2bb0-4e15-8da8-39a38c43aab6" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var startElement=vars.inputParams.page*vars.inputParams.size
+var endElement=(vars.inputParams.page*vars.inputParams.size) +vars.inputParams.size-1
+---
+{
+	destinations: payload.destinations[startElement to if(endElement>payload.page.totalElements-1) payload.page.totalElements-1 else endElement],
+	page: payload.page
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
