@@ -239,11 +239,21 @@ output application/json
 }]]></ee:set-variable>
             </ee:variables>
         </ee:transform>
-        <db:select doc:name="Select" doc:id="4a1420de-cad2-44f7-9130-537b3c485f13" config-ref="Database_Config">
-			<db:sql ><![CDATA[select * from airlines_sandbox.airports where IATA in(
+        <choice doc:name="Choice" doc:id="d35c40da-0f5d-4528-8cef-eb72ced345d0" >
+			<when expression="#[vars.inputParams.airlineIATACode != null]">
+				<db:select doc:name="Select" doc:id="4a1420de-cad2-44f7-9130-537b3c485f13" config-ref="Database_Config">
+			<db:sql><![CDATA[select * from airlines_sandbox.airports where IATA in(
 select distinct Destination_Airport from airlines_sandbox.flights_varghese where Flight_Code like :airlineIATACode)]]></db:sql>
-			<db:input-parameters ><![CDATA[#[{'airlineIATACode': vars.inputParams.airlineIATACode ++ '%','page': vars.inputParams.page as String}]]]></db:input-parameters>
+			<db:input-parameters><![CDATA[#[{'airlineIATACode': vars.inputParams.airlineIATACode ++ '%','page': vars.inputParams.page as String}]]]></db:input-parameters>
 		</db:select>
+			</when>
+			<otherwise >
+				<db:select doc:name="Select" doc:id="6f782de0-2129-4b0a-94d8-75fc8c7be26c" config-ref="Database_Config">
+					<db:sql ><![CDATA[select * from airlines_sandbox.airports where IATA in(
+select distinct Destination_Airport from airlines_sandbox.flights_varghese)]]></db:sql>
+				</db:select>
+			</otherwise>
+		</choice>
 		<ee:transform doc:name="Transform Message-map to output structure" doc:id="8b10988d-f559-4dc1-b41b-a980610ddb02" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
@@ -254,7 +264,7 @@ output application/json
 		country: payload01.Country,
 		airportName: payload01.Name,
 		city: payload01.City,
-		airlineIATACode: vars.inputParams.airlineIATACode as String
+		airlineIATACode: vars.inputParams.airlineIATACode
 	},
 	page: {
 		pageNumber: vars.inputParams.page,
