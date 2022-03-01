@@ -234,7 +234,7 @@ output application/json
 ---
 {
 	"airlineIATACode": attributes.queryParams.airlineIATACode,
-	"page": attributes.queryParams.page default 1,
+	"page": attributes.queryParams.page default 0,
 	"size": attributes.queryParams.size  default 10
 }]]></ee:set-variable>
             </ee:variables>
@@ -309,10 +309,19 @@ output application/json
             </ee:variables>
         </ee:transform>
         <logger level="INFO" doc:name="Logger" doc:id="696e6da2-603f-4f94-9280-b6a567b2e2aa" message="#[vars.inputParams.departureDate]" />
-        <db:select doc:name="Select" doc:id="602991a7-a380-4a47-89e6-f95e76ed9adc" config-ref="Database_Config">
+        <choice doc:name="Choice" doc:id="a83e8988-4677-41ad-bbb1-dac7698a2998" >
+			<when expression="#[vars.inputParams.departureDate != null]">
+				<db:select doc:name="Select" doc:id="602991a7-a380-4a47-89e6-f95e76ed9adc" config-ref="Database_Config">
             <db:sql><![CDATA[select * from flights_varghese where DATE(Departure_date) = :departureDate]]></db:sql>
             <db:input-parameters><![CDATA[#[{'departureDate' : vars.inputParams.departureDate}]]]></db:input-parameters>
         </db:select>
+			</when>
+			<otherwise >
+				<db:select doc:name="Select All flights" doc:id="e168831e-2379-42e2-b912-ed5d43bc0ca9" config-ref="Database_Config" >
+					<db:sql ><![CDATA[select * from flights_varghese]]></db:sql>
+				</db:select>
+			</otherwise>
+		</choice>
         <ee:transform doc:name="Transform to Output Message" doc:id="73855b91-7722-4440-8080-0a930f044c9f">
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
