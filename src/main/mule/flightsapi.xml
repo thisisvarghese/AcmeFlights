@@ -3,7 +3,7 @@
     <http:listener-config name="flightsapi-httpListenerConfig">
         <http:listener-connection host="0.0.0.0" port="8081" />
     </http:listener-config>
-    <apikit:config name="flightsapi-config" api="resource::167d5a72-8c0d-44a7-a4f8-60e62c8a11fe:flightsapi:3.1.0:raml:zip:flightsapi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <apikit:config name="flightsapi-config" api="resource::167d5a72-8c0d-44a7-a4f8-60e62c8a11fe:flightsapi:3.1.1:raml:zip:flightsapi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
     <db:config name="Database_Config" doc:name="Database Config" doc:id="ac29f3ab-18ce-44d2-a18a-6d7421bd2a12">
         <db:my-sql-connection host="rds-mysql-assessment.ckld9drpn0yb.eu-west-1.rds.amazonaws.com" port="3306" user="varghese" password="amrsterdam" database="airlines_sandbox" />
     </db:config>
@@ -239,24 +239,24 @@ output application/json
 }]]></ee:set-variable>
             </ee:variables>
         </ee:transform>
-        <choice doc:name="Choice" doc:id="d35c40da-0f5d-4528-8cef-eb72ced345d0" >
-			<when expression="#[vars.inputParams.airlineIATACode != null]">
-				<db:select doc:name="Select" doc:id="4a1420de-cad2-44f7-9130-537b3c485f13" config-ref="Database_Config">
-			<db:sql><![CDATA[select * from airlines_sandbox.airports where IATA in(
+        <choice doc:name="Choice" doc:id="d35c40da-0f5d-4528-8cef-eb72ced345d0">
+            <when expression="#[vars.inputParams.airlineIATACode != null]">
+                <db:select doc:name="Select" doc:id="4a1420de-cad2-44f7-9130-537b3c485f13" config-ref="Database_Config">
+                    <db:sql><![CDATA[select * from airlines_sandbox.airports where IATA in(
 select distinct Destination_Airport from airlines_sandbox.flights_varghese where Flight_Code like :airlineIATACode)]]></db:sql>
-			<db:input-parameters><![CDATA[#[{'airlineIATACode': vars.inputParams.airlineIATACode ++ '%','page': vars.inputParams.page as String}]]]></db:input-parameters>
-		</db:select>
-			</when>
-			<otherwise >
-				<db:select doc:name="Select" doc:id="6f782de0-2129-4b0a-94d8-75fc8c7be26c" config-ref="Database_Config">
-					<db:sql ><![CDATA[select * from airlines_sandbox.airports where IATA in(
+                    <db:input-parameters><![CDATA[#[{'airlineIATACode': vars.inputParams.airlineIATACode ++ '%','page': vars.inputParams.page as String}]]]></db:input-parameters>
+                </db:select>
+            </when>
+            <otherwise>
+                <db:select doc:name="Select" doc:id="6f782de0-2129-4b0a-94d8-75fc8c7be26c" config-ref="Database_Config">
+                    <db:sql><![CDATA[select * from airlines_sandbox.airports where IATA in(
 select distinct Destination_Airport from airlines_sandbox.flights_varghese)]]></db:sql>
-				</db:select>
-			</otherwise>
-		</choice>
-		<ee:transform doc:name="Transform Message-map to output structure" doc:id="8b10988d-f559-4dc1-b41b-a980610ddb02" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
+                </db:select>
+            </otherwise>
+        </choice>
+        <ee:transform doc:name="Transform Message-map to output structure" doc:id="8b10988d-f559-4dc1-b41b-a980610ddb02">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {
@@ -273,17 +273,17 @@ output application/json
 		totalElements: sizeOf(payload)
 	}
 }]]></ee:set-payload>
-			</ee:message>
-			<ee:variables >
-				<ee:set-variable variableName="sizeOfArray" ><![CDATA[%dw 2.0
+            </ee:message>
+            <ee:variables>
+                <ee:set-variable variableName="sizeOfArray"><![CDATA[%dw 2.0
 output application/json
 ---
 sizeOf(payload)]]></ee:set-variable>
-			</ee:variables>
-		</ee:transform>
-		<ee:transform doc:name="get Requested Pages" doc:id="74fd68f6-2bb0-4e15-8da8-39a38c43aab6" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
+            </ee:variables>
+        </ee:transform>
+        <ee:transform doc:name="get Requested Pages" doc:id="74fd68f6-2bb0-4e15-8da8-39a38c43aab6">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 var startElement=vars.inputParams.page*vars.inputParams.size
 var endElement=(vars.inputParams.page*vars.inputParams.size) +vars.inputParams.size-1
@@ -292,9 +292,9 @@ var endElement=(vars.inputParams.page*vars.inputParams.size) +vars.inputParams.s
 	destinations: payload.destinations[startElement to if(endElement>payload.page.totalElements-1) payload.page.totalElements-1 else endElement],
 	page: payload.page
 }]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-		<logger level="INFO" message="get:\destinations:flightsapi-config" />
+            </ee:message>
+        </ee:transform>
+        <logger level="INFO" message="get:\destinations:flightsapi-config" />
     </flow>
     <flow name="get:\flights:flightsapi-config">
         <ee:transform doc:name="Save Input Variables" doc:id="3aae7280-9b07-4521-9fc6-c7de1ec37e51">
@@ -309,19 +309,19 @@ output application/json
             </ee:variables>
         </ee:transform>
         <logger level="INFO" doc:name="Logger" doc:id="696e6da2-603f-4f94-9280-b6a567b2e2aa" message="#[vars.inputParams.departureDate]" />
-        <choice doc:name="Choice" doc:id="a83e8988-4677-41ad-bbb1-dac7698a2998" >
-			<when expression="#[vars.inputParams.departureDate != null]">
-				<db:select doc:name="Select" doc:id="602991a7-a380-4a47-89e6-f95e76ed9adc" config-ref="Database_Config">
-            <db:sql><![CDATA[select * from flights_varghese where DATE(Departure_date) = :departureDate]]></db:sql>
-            <db:input-parameters><![CDATA[#[{'departureDate' : vars.inputParams.departureDate}]]]></db:input-parameters>
-        </db:select>
-			</when>
-			<otherwise >
-				<db:select doc:name="Select All flights" doc:id="e168831e-2379-42e2-b912-ed5d43bc0ca9" config-ref="Database_Config" >
-					<db:sql ><![CDATA[select * from flights_varghese]]></db:sql>
-				</db:select>
-			</otherwise>
-		</choice>
+        <choice doc:name="Choice" doc:id="a83e8988-4677-41ad-bbb1-dac7698a2998">
+            <when expression="#[vars.inputParams.departureDate != null]">
+                <db:select doc:name="Select" doc:id="602991a7-a380-4a47-89e6-f95e76ed9adc" config-ref="Database_Config">
+                    <db:sql><![CDATA[select * from flights_varghese where DATE(Departure_date) = :departureDate]]></db:sql>
+                    <db:input-parameters><![CDATA[#[{'departureDate' : vars.inputParams.departureDate}]]]></db:input-parameters>
+                </db:select>
+            </when>
+            <otherwise>
+                <db:select doc:name="Select All flights" doc:id="e168831e-2379-42e2-b912-ed5d43bc0ca9" config-ref="Database_Config">
+                    <db:sql><![CDATA[select * from flights_varghese]]></db:sql>
+                </db:select>
+            </otherwise>
+        </choice>
         <ee:transform doc:name="Transform to Output Message" doc:id="73855b91-7722-4440-8080-0a930f044c9f">
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0

@@ -67,16 +67,16 @@
 			<classifier>mule-plugin</classifier>
 		</dependency>
 		<dependency>
-			<groupId>167d5a72-8c0d-44a7-a4f8-60e62c8a11fe</groupId>
-			<artifactId>flightsapi</artifactId>
-			<version>3.1.0</version>
-			<classifier>raml</classifier>
-			<type>zip</type>
-		</dependency>
-		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<version>8.0.28</version>
+		</dependency>
+		<dependency>
+			<groupId>167d5a72-8c0d-44a7-a4f8-60e62c8a11fe</groupId>
+			<artifactId>flightsapi</artifactId>
+			<version>3.1.1</version>
+			<classifier>raml</classifier>
+			<type>zip</type>
 		</dependency>
 	</dependencies>
 
